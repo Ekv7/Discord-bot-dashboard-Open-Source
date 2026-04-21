@@ -1,0 +1,24 @@
+# Beispiel: Named Tunnel mit fester Subdomain (Domain bei Cloudflare)
+#
+# 1) cloudflared tunnel login
+# 2) cloudflared tunnel create mynex-dashboard
+# 3) Kopiere die Tunnel-ID und die credentials-Datei aus %USERPROFILE%\.cloudflared\
+# 4) cloudflared tunnel route dns mynex-dashboard dashboard.deinedomain.de
+# 5) Diese Datei als z.B. config/cloudflared.yml speichern und Pfade anpassen
+#
+# Start: cloudflared tunnel --config config/cloudflared.yml run
+#
+# .env (Auszug):
+#   DASHBOARD_PUBLIC_URL=https://dashboard.deinedomain.de
+#   DASHBOARD_OAUTH_REDIRECT_URI=https://dashboard.deinedomain.de/api/auth/callback
+#   TRUST_PROXY=true
+#   VITE_DASHBOARD_API_BASE_URL=https://dashboard.deinedomain.de
+# Danach: npm run build:dashboard (sonst kann das Frontend noch localhost im Bundle haben).
+
+tunnel: ERSETZE_TUNNEL_UUID
+credentials-file: C:/Users/DEIN_USER/.cloudflared/ERSETZE_TUNNEL_UUID.json
+
+ingress:
+  - hostname: dashboard.deinedomain.de
+    service: http://127.0.0.1:3847
+  - service: http_status:404

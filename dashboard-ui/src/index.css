@@ -1,0 +1,381 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, "Cascadia Code", monospace;
+}
+
+:root {
+  --background: #000000;
+  --foreground: #e8eaed;
+  --card: #08080a;
+  --card-foreground: #e8eaed;
+  --border: rgba(255, 255, 255, 0.075);
+  --muted: #8b919a;
+  --accent: #8b90e8;
+  --accent-foreground: #fff;
+  --destructive: #ed4245;
+  --ring: #8b90e8;
+  --main-black: #000000;
+  --sidebar: #060607;
+  --scrollbar-track: #121212;
+  --scrollbar-thumb: #383838;
+}
+
+@layer components {
+  .dash-page-title {
+    @apply text-2xl font-semibold tracking-tight text-white;
+  }
+  .dash-page-desc {
+    @apply mt-1 max-w-2xl text-sm leading-relaxed text-[var(--muted)];
+  }
+  .dash-panel {
+    @apply overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--card)];
+  }
+  /* Für Popovers (z. B. CleanSelect): kein overflow-hidden, sonst wird die Liste abgeschnitten */
+  .dash-panel-popover {
+    @apply overflow-visible rounded-xl border border-[var(--border)] bg-[var(--card)];
+  }
+  .dash-input {
+    @apply min-h-[44px] rounded-lg border border-[var(--border)] bg-black/35 px-3 py-2.5 text-sm text-white placeholder:text-zinc-600 outline-none transition-colors focus:border-zinc-600/90 focus:ring-1 focus:ring-zinc-600/50 md:min-h-0 md:py-2;
+  }
+  .dash-btn {
+    @apply inline-flex min-h-[44px] min-w-[44px] touch-manipulation items-center justify-center gap-1.5 rounded-lg border border-[var(--border)] bg-black/30 px-3 py-2 text-xs font-medium text-zinc-300 transition-colors hover:border-zinc-600/70 hover:bg-white/[0.06] hover:text-white focus:outline-none focus:ring-1 focus:ring-zinc-600/40 md:min-h-0 md:min-w-0;
+  }
+  .dash-btn-accent {
+    @apply border-[var(--accent)]/35 bg-[var(--accent)]/12 text-white hover:border-[var(--accent)]/50 hover:bg-[var(--accent)]/20;
+  }
+  .dash-btn-danger {
+    @apply border-red-500/20 bg-red-500/[0.06] text-red-300/95 hover:border-red-500/35 hover:bg-red-500/10;
+  }
+
+  .dash-page-shell {
+    @apply mx-auto max-w-5xl space-y-6;
+  }
+
+  .dash-page-shell-loose {
+    @apply mx-auto max-w-5xl space-y-8;
+  }
+
+  .dash-page-shell-xs {
+    @apply mx-auto max-w-xl space-y-6;
+  }
+
+  .dash-page-shell-sm {
+    @apply mx-auto max-w-2xl space-y-6;
+  }
+
+  .dash-page-shell-md {
+    @apply mx-auto max-w-4xl space-y-6;
+  }
+
+  .dash-label {
+    @apply text-xs font-medium text-[var(--muted)];
+  }
+
+  .dash-hint {
+    @apply text-[11px] text-[var(--muted)];
+  }
+
+  .dash-stat-value {
+    @apply mt-2 text-2xl font-semibold tabular-nums tracking-tight text-[var(--foreground)];
+  }
+
+  .dash-section-title {
+    @apply text-sm font-medium text-[var(--foreground)];
+  }
+
+  .dash-nav-item {
+    @apply relative flex min-h-[44px] shrink-0 touch-manipulation items-center gap-2.5 rounded-xl px-3 py-2.5 text-left text-sm font-medium transition-colors text-zinc-500 hover:bg-white/[0.04] hover:text-zinc-200 md:min-h-0;
+  }
+
+  .dash-nav-item::before {
+    content: '';
+    @apply pointer-events-none absolute left-1.5 top-1/2 h-5 w-0.5 -translate-y-1/2 rounded-full bg-transparent;
+  }
+
+  .dash-nav-item-active {
+    @apply bg-white/[0.08] text-white;
+  }
+
+  .dash-nav-item-active::before {
+    @apply bg-[var(--accent)];
+  }
+
+  .dash-nav-icon-wrap {
+    @apply flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-transparent bg-transparent transition-colors;
+  }
+
+  .dash-nav-icon-wrap-active {
+    @apply border-[var(--accent)]/20 bg-[var(--accent)]/10;
+  }
+
+  .dash-app-title {
+    @apply truncate text-lg font-semibold tracking-tight text-white;
+  }
+
+  .dash-app-subtitle {
+    @apply text-xs text-zinc-500;
+  }
+
+  .dash-logo-mark {
+    @apply flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl border border-white/[0.08] bg-zinc-950 p-2.5 shadow-sm ring-1 ring-black/40;
+  }
+
+  .dash-sidebar-brand {
+    @apply items-center gap-3 border-b border-[var(--border)] px-3.5 py-3;
+  }
+
+  .dash-sidebar-logo {
+    @apply flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/[0.08] bg-zinc-950 ring-1 ring-black/30;
+  }
+
+  .dash-sidebar-title {
+    @apply truncate text-sm font-semibold tracking-tight text-[var(--foreground)];
+  }
+
+  .dash-sidebar-subtitle {
+    @apply text-[11px] text-[var(--muted)];
+  }
+
+  .dash-sidebar-section-label {
+    @apply pb-1 text-[10px] font-semibold uppercase tracking-wider text-zinc-600;
+  }
+
+  .dash-sidebar-nav-scroll {
+    @apply -mx-0.5 snap-x snap-mandatory overflow-x-auto scroll-pb-2 scroll-pl-2 scroll-pr-2 [-webkit-overflow-scrolling:touch] md:mx-0 md:snap-none md:overflow-visible md:px-0 md:scroll-pr-0;
+  }
+
+  .dash-nav-item-snap {
+    @apply max-md:snap-start;
+  }
+
+  .dash-filter-chip {
+    @apply rounded-full px-3 py-1 text-xs font-medium transition-colors text-zinc-500 hover:bg-white/[0.06] hover:text-zinc-300;
+  }
+
+  .dash-filter-chip-active {
+    @apply bg-white/12 text-white;
+  }
+
+  .dash-segment {
+    @apply flex rounded-lg border border-[var(--border)] bg-black/20 p-0.5;
+  }
+
+  .dash-segment-btn {
+    @apply min-h-[44px] flex-1 rounded-md px-2 py-2 text-xs font-medium transition-colors text-zinc-500 hover:text-zinc-300 md:min-h-0 md:py-1.5;
+  }
+
+  .dash-segment-btn-active {
+    @apply bg-white/10 text-white;
+  }
+
+  .dash-code {
+    @apply rounded bg-black/40 px-1 font-mono text-xs text-zinc-400;
+  }
+
+  .dash-select-trigger {
+    @apply flex min-h-[48px] w-full touch-manipulation items-center justify-between gap-2 rounded-lg border border-[var(--border)] bg-black/30 px-3 py-2.5 text-left text-sm text-white transition-colors hover:border-zinc-600/80 focus:border-zinc-600 focus:outline-none focus:ring-1 focus:ring-zinc-600 md:min-h-0 md:py-2;
+  }
+
+  .dash-select-option {
+    @apply flex min-h-[44px] w-full touch-manipulation items-center px-3 py-2.5 text-left text-sm transition-colors text-zinc-300 hover:bg-white/[0.05] md:min-h-0;
+  }
+
+  .dash-select-option-active {
+    @apply bg-[var(--accent)]/10 text-[var(--accent)];
+  }
+
+  .dash-select-panel {
+    @apply absolute left-0 right-0 top-full z-[200] mt-1 max-h-[min(18rem,70vh)] overflow-y-auto rounded-xl border border-[var(--border)] bg-[var(--card)] py-1 shadow-2xl shadow-black/50;
+  }
+
+  .dash-list-row-hover {
+    @apply hover:bg-white/[0.04];
+  }
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+  background: var(--main-black);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+  scrollbar-width: thin;
+}
+
+#root {
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: var(--main-black);
+}
+
+/* Hauptinhalt: Abstand zur Home-Indicator-Leiste (iPhone etc.) */
+.dash-main-scroll {
+  padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
+}
+
+.dash-mobile-toolbar {
+  padding-left: max(0px, env(safe-area-inset-left));
+  padding-right: max(0px, env(safe-area-inset-right));
+}
+
+/* Scrollbar wie dunkle Desktop-UI */
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+}
+
+*::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 5px;
+  border: 2px solid var(--scrollbar-track);
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: #4a4a4a;
+}
+
+*::-webkit-scrollbar-corner {
+  background: var(--scrollbar-track);
+}
+
+/* Optionales helles Theme (Toggle im Header) */
+html.light {
+  --background: #f4f4f5;
+  --foreground: #18181b;
+  --card: #ffffff;
+  --card-foreground: #18181b;
+  --border: rgba(0, 0, 0, 0.1);
+  --muted: #71717a;
+  --accent: #6366f1;
+  --accent-foreground: #fff;
+  --destructive: #dc2626;
+  --ring: #6366f1;
+  --main-black: #f4f4f5;
+  --sidebar: #ececee;
+  --scrollbar-track: #e4e4e7;
+  --scrollbar-thumb: #a1a1aa;
+}
+
+html.light body,
+html.light #root {
+  background: var(--main-black);
+  color: var(--foreground);
+}
+
+html.light .dash-page-title {
+  color: var(--foreground);
+}
+
+html.light .dash-page-desc {
+  color: var(--muted);
+}
+
+html.light .dash-input {
+  @apply bg-white text-zinc-900 placeholder:text-zinc-400;
+}
+
+html.light .dash-btn {
+  @apply border-zinc-300/80 bg-white text-zinc-700 hover:border-zinc-400 hover:bg-zinc-50 hover:text-zinc-900;
+}
+
+html.light .dash-btn-accent {
+  @apply border-indigo-400/50 bg-indigo-50 text-indigo-900 hover:border-indigo-500 hover:bg-indigo-100;
+}
+
+html.light .dash-btn-danger {
+  @apply border-red-200 bg-red-50 text-red-800 hover:border-red-300 hover:bg-red-100;
+}
+
+html.light *::-webkit-scrollbar-thumb:hover {
+  background: #71717a;
+}
+
+html.light .dash-nav-item {
+  @apply text-zinc-600 hover:bg-black/[0.04] hover:text-zinc-900;
+}
+
+html.light .dash-nav-item-active {
+  @apply bg-black/[0.06] text-zinc-900;
+}
+
+html.light .dash-nav-icon-wrap-active {
+  @apply border-indigo-200 bg-indigo-50;
+}
+
+html.light .dash-app-title {
+  @apply text-zinc-900;
+}
+
+html.light .dash-app-subtitle {
+  @apply text-zinc-600;
+}
+
+html.light .dash-logo-mark {
+  @apply border-zinc-200/90 bg-white ring-zinc-200/80;
+}
+
+html.light .dash-sidebar-brand {
+  @apply border-zinc-200/90;
+}
+
+html.light .dash-sidebar-logo {
+  @apply border-zinc-200/90 bg-white ring-zinc-200/80;
+}
+
+html.light .dash-sidebar-section-label {
+  @apply text-zinc-500;
+}
+
+html.light .dash-filter-chip {
+  @apply text-zinc-600 hover:bg-black/[0.05] hover:text-zinc-900;
+}
+
+html.light .dash-filter-chip-active {
+  @apply bg-zinc-900/[0.08] text-zinc-900;
+}
+
+html.light .dash-segment {
+  @apply border-zinc-200 bg-zinc-100/80;
+}
+
+html.light .dash-segment-btn {
+  @apply text-zinc-600 hover:text-zinc-900;
+}
+
+html.light .dash-segment-btn-active {
+  @apply bg-white text-zinc-900 shadow-sm;
+}
+
+html.light .dash-code {
+  @apply bg-zinc-200/90 text-zinc-700;
+}
+
+html.light .dash-select-trigger {
+  @apply border-zinc-200 bg-white text-zinc-900 hover:border-zinc-300;
+}
+
+html.light .dash-select-option {
+  @apply text-zinc-700 hover:bg-zinc-100;
+}
+
+html.light .dash-select-option-active {
+  @apply bg-indigo-50 text-indigo-700;
+}
+
+html.light .dash-select-panel {
+  @apply shadow-lg shadow-zinc-400/25;
+}
+
+html.light .dash-list-row-hover:hover {
+  @apply bg-zinc-100/80;
+}

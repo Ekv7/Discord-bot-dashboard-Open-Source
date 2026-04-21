@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mynex Dashboard</title>
+<link rel="icon" type="image/png" href="/mynex-logo.png" />
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Syne:wght@400;600;700&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0d0f14;
+    --surface: #13161e;
+    --surface2: #1a1e28;
+    --border: #ffffff0f;
+    --border2: #ffffff18;
+    --accent: #8b90e8;
+    --accent2: #57f287;
+    --warn: #fee75c;
+    --danger: #ed4245;
+    --text: #e8eaf0;
+    --muted: #8b90a0;
+    --dim: #555a6a;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    grid-template-rows: auto 1fr;
+  }
+
+  .topbar {
+    grid-column: 1 / -1;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 28px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .topbar-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+  }
+
+  .logo-icon {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    background: #09090b;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    padding: 6px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  }
+
+  .logo-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  .status-pill {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--accent2);
+    background: #57f28715;
+    border: 1px solid #57f28730;
+    padding: 5px 12px;
+    border-radius: 20px;
+  }
+
+  .status-pill.offline {
+    color: var(--danger);
+    background: #ed424515;
+    border-color: #ed424530;
+  }
+
+  .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent2);
+    animation: pulse 2s infinite;
+  }
+
+  .status-pill.offline .dot {
+    background: var(--danger);
+    animation: none;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  .sidebar {
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    padding: 20px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .nav-section {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--dim);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 12px 10px 6px;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.15s;
+    border: 1px solid transparent;
+    text-decoration: none;
+  }
+
+  .nav-item:hover { background: var(--surface2); color: var(--text); }
+  .nav-item.active { background: var(--accent)18; color: var(--accent); border-color: var(--accent)30; }
+
+  .nav-icon { width: 16px; height: 16px; opacity: 0.8; flex-shrink: 0; }
+
+  .main {
+    padding: 28px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .page { display: none; flex-direction: column; gap: 24px; }
+  .page.active { display: flex; }
+
+  .page-title {
+    font-size: 20px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 14px;
+  }
+
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 20px;
+  }
+
+  .stat-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  .stat-value {
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+
+  .stat-sub { font-size: 12px; color: var(--muted); }
+
+  .stat-value.green { color: var(--accent2); }
+  .stat-value.blue { color: var(--accent); }
+  .stat-value.yellow { color: var(--warn); }
+  .stat-value.red { color: var(--danger); }
+
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .panel-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .panel-title {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .panel-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+
+  .btn {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    padding: 6px 14px;
+    border-radius: 6px;
+    border: 1px solid var(--border2);
+    background: var(--surface2);
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .btn:hover { color: var(--text); border-color: var(--border2); background: #ffffff0a; }
+  .btn.primary { background: var(--accent)20; color: var(--accent); border-color: var(--accent)40; }
+  .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+  .filter-bar {
+    padding: 12px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .filter-chip {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    border: 1px solid var(--border2);
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .filter-chip.active { background: var(--accent)20; color: var(--accent); border-color: var(--accent)50; }
+  .filter-chip:hover { color: var(--text); }
+
+  .log-list { padding: 8px 0; max-height: 420px; overflow-y: auto; }
+
+  .log-entry {
+    display: grid;
+    grid-template-columns: 130px 90px 1fr auto;
+    align-items: center;
+    gap: 16px;
+    padding: 10px 20px;
+    border-bottom: 1px solid var(--border);
+    transition: background 0.1s;
+    animation: fadeIn 0.3s ease;
+  }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+
+  .log-entry:hover { background: var(--surface2); }
+  .log-entry:last-child { border-bottom: none; }
+
+  .log-time {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--dim);
+  }
+
+  .log-badge {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    padding: 3px 10px;
+    border-radius: 4px;
+    text-align: center;
+    letter-spacing: 0.04em;
+  }
+
+  .badge-role { background: var(--accent)20; color: var(--accent); }
+  .badge-join { background: #57f28720; color: var(--accent2); }
+  .badge-leave { background: var(--danger)20; color: var(--danger); }
+  .badge-ban { background: var(--danger)30; color: var(--danger); }
+  .badge-msg { background: var(--warn)15; color: var(--warn); }
+  .badge-cmd { background: #eb459e20; color: #eb459e; }
+  .badge-voice { background: #9b59b620; color: #9b59b6; }
+  .badge-audit { background: #3498db25; color: #3498db; }
+
+  .log-msg { font-size: 13px; color: var(--text); }
+  .log-msg span { color: var(--muted); }
+  .log-user { font-weight: 600; color: var(--text); }
+
+  .log-meta {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--dim);
+    text-align: right;
+  }
+
+  .console {
+    background: #090b0f;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .console-header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    flex-wrap: wrap;
+  }
+
+  .console-dots { display: flex; gap: 6px; }
+  .console-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .cd-red { background: #ed4245; }
+  .cd-yellow { background: #fee75c; }
+  .cd-green { background: #57f287; }
+
+  .console-body {
+    padding: 16px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    line-height: 1.8;
+    max-height: min(55vh, 520px);
+    overflow-y: auto;
+    color: #6aff8a;
+  }
+
+  .c-dim { color: var(--dim); }
+  .c-warn { color: var(--warn); }
+  .c-err { color: var(--danger); }
+  .c-info { color: #7ec8e3; }
+  .c-white { color: #c8cdd8; }
+
+  .cmd-table { width: 100%; border-collapse: collapse; }
+  .cmd-table th {
+    text-align: left;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--dim);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 10px 20px;
+    border-bottom: 1px solid var(--border);
+    font-weight: 500;
+  }
+  .cmd-table td {
+    padding: 12px 20px;
+    font-size: 13px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+  .cmd-table tr:last-child td { border-bottom: none; }
+  .cmd-table tr:hover td { background: var(--surface2); }
+  .cmd-name { font-family: 'IBM Plex Mono', monospace; color: #eb459e; font-size: 13px; }
+  .cmd-uses { font-family: 'IBM Plex Mono', monospace; color: var(--accent); font-size: 13px; }
+  .cmd-desc { color: var(--muted); }
+
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+  .search-input {
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    padding: 7px 14px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--text);
+    outline: none;
+    width: 220px;
+    max-width: 100%;
+    transition: border 0.15s;
+  }
+  .search-input::placeholder { color: var(--dim); }
+  .search-input:focus { border-color: var(--accent)60; }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+  .load-err {
+    background: var(--danger)15;
+    border: 1px solid var(--danger)40;
+    color: var(--danger);
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    display: none;
+  }
+  .load-err.visible { display: block; }
+
+  @media (max-width: 900px) {
+    body { grid-template-columns: 1fr; grid-template-rows: auto auto 1fr; }
+    .sidebar { flex-direction: row; flex-wrap: wrap; border-right: none; border-bottom: 1px solid var(--border); }
+    .two-col { grid-template-columns: 1fr; }
+    .log-entry { grid-template-columns: 1fr; gap: 6px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-logo">
+    <div class="logo-icon"><img src="/mynex-logo.png" alt="Mynex" width="28" height="28" /></div>
+    Mynex Dashboard
+  </div>
+  <div class="status-pill offline" id="conn-pill">
+    <div class="dot"></div>
+    <span id="conn-text">Verbindung…</span>
+  </div>
+</header>
+
+<nav class="sidebar">
+  <div class="nav-section">Navigation</div>
+  <a class="nav-item active" href="#" data-page="overview" onclick="showPage('overview', this); return false;">
+    <svg class="nav-icon" viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="1" width="6" height="6" rx="1.5"/><rect x="9" y="1" width="6" height="6" rx="1.5"/><rect x="1" y="9" width="6" height="6" rx="1.5"/><rect x="9" y="9" width="6" height="6" rx="1.5"/></svg>
+    Übersicht
+  </a>
+  <a class="nav-item" href="#" data-page="logs" onclick="showPage('logs', this); return false;">
+    <svg class="nav-icon" viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="2" width="14" height="2" rx="1"/><rect x="1" y="7" width="10" height="2" rx="1"/><rect x="1" y="12" width="12" height="2" rx="1"/></svg>
+    Server Logs
+  </a>
+  <a class="nav-item" href="#" data-page="commands" onclick="showPage('commands', this); return false;">
+    <svg class="nav-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M2 3h12v2H2zm0 4h8v2H2zm0 4h10v2H2z"/></svg>
+    Commands
+  </a>
+  <a class="nav-item" href="#" data-page="console" onclick="showPage('console', this); return false;">
+    <svg class="nav-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M1 2h14v12H1zm1 2v8h12V4zm2 2l3 2-3 2V6zm4 4h4v1h-4z"/></svg>
+    Console
+  </a>
+  <div class="nav-section" style="margin-top:auto">Hinweis</div>
+  <div class="nav-item" style="cursor:default; opacity:0.75">
+    <span style="font-size:11px; line-height:1.4">Join/Leave/Ban/Voice nur mit passenden Intents im Bot &amp; Portal.</span>
+  </div>
+</nav>
+
+<main class="main">
+  <div class="load-err" id="load-err"></div>
+
+  <div class="page active" id="page-overview">
+    <div class="page-title">
+      <svg width="18" height="18" viewBox="0 0 16 16" fill="var(--accent)"><rect x="1" y="1" width="6" height="6" rx="1.5"/><rect x="9" y="1" width="6" height="6" rx="1.5"/><rect x="1" y="9" width="6" height="6" rx="1.5"/><rect x="9" y="9" width="6" height="6" rx="1.5"/></svg>
+      Übersicht
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Server Members</div>
+        <div class="stat-value blue" id="stat-members">—</div>
+        <div class="stat-sub" id="stat-guild-name">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Commands heute</div>
+        <div class="stat-value green" id="stat-cmds">—</div>
+        <div class="stat-sub">Slash ausgeführt</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Rollen-Events heute</div>
+        <div class="stat-value yellow" id="stat-roles">—</div>
+        <div class="stat-sub" id="stat-roles-detail">geben / entfernen</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Fehler (Session)</div>
+        <div class="stat-value red" id="stat-errors">—</div>
+        <div class="stat-sub">seit Bot-Start</div>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">Letzte Events</div>
+        </div>
+        <div class="log-list" id="overview-logs"></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">Bot Info</div>
+        </div>
+        <div style="padding: 16px 20px; display: flex; flex-direction: column; gap: 12px;">
+          <div style="display:flex; justify-content:space-between; font-size:13px; padding-bottom:10px; border-bottom:1px solid var(--border);">
+            <span style="color:var(--muted)">Bot Name</span>
+            <span id="bot-name" style="font-family:monospace">—</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; font-size:13px; padding-bottom:10px; border-bottom:1px solid var(--border);">
+            <span style="color:var(--muted)">Framework</span>
+            <span style="font-family:monospace; color:var(--accent)">discord.js v14</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; font-size:13px; padding-bottom:10px; border-bottom:1px solid var(--border);">
+            <span style="color:var(--muted)">Sprache</span>
+            <span style="font-family:monospace">JavaScript (ESM)</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; font-size:13px; padding-bottom:10px; border-bottom:1px solid var(--border);">
+            <span style="color:var(--muted)">Slash Commands</span>
+            <span id="bot-cmd-count" style="font-family:monospace; color:var(--accent2)">—</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; font-size:13px;">
+            <span style="color:var(--muted)">Intents</span>
+            <span style="font-family:monospace; color:var(--muted); font-size:11px; text-align:right; max-width:60%">Guilds, Members, Moderation, Voice</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="page" id="page-logs">
+    <div class="page-title">
+      <svg width="18" height="18" viewBox="0 0 16 16" fill="var(--accent)"><rect x="1" y="2" width="14" height="2" rx="1"/><rect x="1" y="7" width="10" height="2" rx="1"/><rect x="1" y="12" width="12" height="2" rx="1"/></svg>
+      Server Logs
+    </div>
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">Alle Events</div>
+        <div class="panel-actions">
+          <input class="search-input" type="text" placeholder="Suchen…" id="log-search" oninput="filterLogs()">
+          <button class="btn primary" type="button" onclick="simulateLog()">+ Simulieren</button>
+        </div>
+      </div>
+      <div class="filter-bar" id="log-filters">
+        <button type="button" class="filter-chip active" onclick="setFilter('all', this)">Alle</button>
+        <button type="button" class="filter-chip" onclick="setFilter('role', this)">Rolle</button>
+        <button type="button" class="filter-chip" onclick="setFilter('join', this)">Join</button>
+        <button type="button" class="filter-chip" onclick="setFilter('leave', this)">Leave</button>
+        <button type="button" class="filter-chip" onclick="setFilter('ban', this)">Ban</button>
+        <button type="button" class="filter-chip" onclick="setFilter('cmd', this)">Command</button>
+        <button type="button" class="filter-chip" onclick="setFilter('voice', this)">Voice</button>
+        <button type="button" class="filter-chip" onclick="setFilter('audit', this)">Audit</button>
+      </div>
+      <div class="log-list" id="full-log-list" style="max-height:520px"></div>
+    </div>
+  </div>
+
+  <div class="page" id="page-commands">
+    <div class="page-title">
+      <svg width="18" height="18" viewBox="0 0 16 16" fill="var(--accent)"><path d="M2 3h12v2H2zm0 4h8v2H2zm0 4h10v2H2z"/></svg>
+      Commands
+    </div>
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">Registrierte Commands &amp; Buttons</div>
+        <button class="btn" type="button" disabled title="Commands werden beim Bot-Start synchronisiert">Sync (Bot-Neustart)</button>
+      </div>
+      <table class="cmd-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Beschreibung</th>
+            <th>Typ</th>
+            <th>Nutzungen</th>
+          </tr>
+        </thead>
+        <tbody id="cmd-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="page" id="page-console">
+    <div class="page-title">
+      <svg width="18" height="18" viewBox="0 0 16 16" fill="var(--accent)"><path d="M1 2h14v12H1zm1 2v8h12V4zm2 2l3 2-3 2V6zm4 4h4v1h-4z"/></svg>
+      Console Logs
+    </div>
+    <div class="console">
+      <div class="console-header">
+        <div class="console-dots">
+          <div class="console-dot cd-red"></div>
+          <div class="console-dot cd-yellow"></div>
+          <div class="console-dot cd-green"></div>
+        </div>
+        <span>bot · live (SSE)</span>
+        <div style="margin-left:auto; display:flex; gap:8px; flex-wrap:wrap;">
+          <button class="btn" type="button" onclick="clearConsole()">Clear</button>
+          <button class="btn primary" type="button" onclick="toggleAutoScroll()" id="autoscroll-btn">Auto-scroll: AN</button>
+        </div>
+      </div>
+      <div class="console-body" id="console-body"></div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+let currentFilter = 'all';
+let autoScroll = true;
+let logs = [];
+let consoleLines = [];
+
+function fmtTime(ts) {
+  return new Date(ts).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+}
+
+function badgeClass(type) {
+  const m = { role: 'badge-role', join: 'badge-join', leave: 'badge-leave', ban: 'badge-ban', msg: 'badge-msg', cmd: 'badge-cmd', voice: 'badge-voice', audit: 'badge-audit' };
+  return m[type] || 'badge-msg';
+}
+
+function badgeLabel(type) {
+  const m = { role: 'ROLLE', join: 'JOIN', leave: 'LEAVE', ban: 'BAN', msg: 'MSG', cmd: 'CMD', voice: 'VOICE', audit: 'AUDIT' };
+  return m[type] || String(type).toUpperCase();
+}
+
+function serverRowToLog(row) {
+  return {
+    ts: row.ts,
+    type: row.type,
+    user: row.user,
+    msg: row.msg + (row.simulated ? ' <span>(simuliert)</span>' : ''),
+    channel: row.channel || ''
+  };
+}
+
+function renderLog(log, mini) {
+  const time = fmtTime(log.ts);
+  if (mini) {
+    return `<div class="log-entry" style="grid-template-columns:100px 80px 1fr" data-type="${log.type}">
+      <span class="log-time">${time}</span>
+      <span class="log-badge ${badgeClass(log.type)}">${badgeLabel(log.type)}</span>
+      <span class="log-msg"><span class="log-user">${escapeHtml(log.user)}</span> ${log.msg}</span>
+    </div>`;
+  }
+  return `<div class="log-entry" data-type="${log.type}">
+    <span class="log-time">${time}</span>
+    <span class="log-badge ${badgeClass(log.type)}">${badgeLabel(log.type)}</span>
+    <span class="log-msg"><span class="log-user">${escapeHtml(log.user)}</span> ${log.msg}</span>
+    <span class="log-meta">${escapeHtml(log.channel || '')}</span>
+  </div>`;
+}
+
+function escapeHtml(s) {
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+function renderAllLogs() {
+  const search = (document.getElementById('log-search')?.value || '').toLowerCase();
+  const list = logs.filter(l => currentFilter === 'all' || l.type === currentFilter)
+    .filter(l => !search || (l.user + '').toLowerCase().includes(search) || stripHtml(l.msg).toLowerCase().includes(search));
+  document.getElementById('full-log-list').innerHTML = list.map(l => renderLog(l)).join('') || '<div style="padding:20px;color:var(--muted)">Keine Einträge.</div>';
+  document.getElementById('overview-logs').innerHTML = logs.slice(0, 8).map(l => renderLog(l, true)).join('') || '<div style="padding:16px;color:var(--muted)">Noch keine Events.</div>';
+}
+
+function stripHtml(h) {
+  const d = document.createElement('div');
+  d.innerHTML = h;
+  return d.textContent || '';
+}
+
+function setFilter(type, el) {
+  currentFilter = type;
+  document.querySelectorAll('#log-filters .filter-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  renderAllLogs();
+}
+
+function filterLogs() { renderAllLogs(); }
+
+function applySnapshot(data) {
+  logs = (data.serverLogs || []).map(serverRowToLog);
+  consoleLines = [...(data.consoleLines || [])];
+  document.getElementById('stat-members').textContent = data.stats?.members != null ? data.stats.members : '—';
+  document.getElementById('stat-guild-name').textContent = data.guild?.name ? `auf ${data.guild.name}` : 'Kein Guild im Cache / DASHBOARD_GUILD_ID setzen';
+  document.getElementById('stat-cmds').textContent = data.stats?.commandsToday ?? '0';
+  const rg = data.stats?.rolesGivenToday ?? 0;
+  const rr = data.stats?.rolesRemovedToday ?? 0;
+  document.getElementById('stat-roles').textContent = String((data.stats?.rolesToday ?? rg + rr));
+  document.getElementById('stat-roles-detail').textContent = `+${rg} / −${rr} (Rolle über Button)`;
+  document.getElementById('stat-errors').textContent = String(data.stats?.errorsSession ?? 0);
+  document.getElementById('bot-name').textContent = data.bot?.tag || '—';
+  document.getElementById('bot-cmd-count').textContent = `${(data.commands || []).length} Slash`;
+  renderCommandsTable(data);
+  renderAllLogs();
+  renderConsole();
+}
+
+function renderCommandsTable(data) {
+  const u = data.usage || {};
+  const rows = [];
+  for (const c of data.commands || []) {
+    const name = '/' + c.name;
+    rows.push(`<tr><td><span class="cmd-name">${escapeHtml(name)}</span></td><td class="cmd-desc">${escapeHtml(c.description || '')}</td><td><span class="filter-chip active" style="display:inline-block;cursor:default">Slash</span></td><td class="cmd-uses">${u[c.name] ?? 0}</td></tr>`);
+  }
+  for (const b of data.buttons || []) {
+    rows.push(`<tr><td><span class="cmd-name">${escapeHtml(b.label)}</span></td><td class="cmd-desc">${escapeHtml(b.description || '')}</td><td><span class="filter-chip" style="display:inline-block;cursor:default;color:#eb459e;border-color:#eb459e40;background:#eb459e15">Button</span></td><td class="cmd-uses">${u[b.usageKey] ?? 0}</td></tr>`);
+  }
+  document.getElementById('cmd-tbody').innerHTML = rows.join('') || '<tr><td colspan="4" style="color:var(--muted)">Keine Daten.</td></tr>';
+}
+
+function lineClass(level) {
+  if (level === 'error') return 'c-err';
+  if (level === 'warn') return 'c-warn';
+  return 'c-white';
+}
+
+function renderConsole() {
+  const body = document.getElementById('console-body');
+  body.innerHTML = consoleLines.map(l => `<div class="${lineClass(l.level)}">[${fmtTime(l.ts)}] ${escapeHtml(l.text)}</div>`).join('');
+  if (autoScroll) body.scrollTop = body.scrollHeight;
+}
+
+function pushConsoleLine(line) {
+  consoleLines.push(line);
+  if (consoleLines.length > 600) consoleLines.splice(0, consoleLines.length - 600);
+  renderConsole();
+}
+
+function clearConsole() {
+  consoleLines = [];
+  renderConsole();
+}
+
+function toggleAutoScroll() {
+  autoScroll = !autoScroll;
+  document.getElementById('autoscroll-btn').textContent = `Auto-scroll: ${autoScroll ? 'AN' : 'AUS'}`;
+  if (autoScroll) renderConsole();
+}
+
+function showPage(name, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.sidebar .nav-item[data-page]').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  if (el) el.classList.add('active');
+}
+
+function setConn(ok, text) {
+  const pill = document.getElementById('conn-pill');
+  const span = document.getElementById('conn-text');
+  pill.classList.toggle('offline', !ok);
+  span.textContent = text;
+}
+
+async function simulateLog() {
+  const types = ['join', 'leave', 'role', 'cmd', 'voice', 'ban'];
+  const type = types[Math.floor(Math.random() * types.length)];
+  const user = ['TestUser', 'Demo', 'Sim'][Math.floor(Math.random() * 3)];
+  const msgs = {
+    join: 'ist dem Server beigetreten (Test)',
+    leave: 'hat den Server verlassen (Test)',
+    role: 'Rolle-Event (Test)',
+    cmd: '/send_server (Test)',
+    voice: 'Voice-Event (Test)',
+    ban: 'Ban-Event (Test)'
+  };
+  try {
+    const r = await fetch('/api/simulate', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type, user, msg: msgs[type], channel: '#test' })
+    });
+    const j = await r.json().catch(() => ({}));
+    if (r.status === 401) {
+      window.location.href = '/api/auth/discord';
+      return;
+    }
+    if (!r.ok) alert(j.error || 'Simulieren fehlgeschlagen');
+  } catch (e) {
+    alert('Netzwerkfehler: ' + e.message);
+  }
+}
+
+async function loadSnapshot() {
+  const errEl = document.getElementById('load-err');
+  try {
+    const r = await fetch('/api/snapshot', { credentials: 'include' });
+    const j = await r.json();
+    if (r.status === 401) {
+      window.location.href = '/api/auth/discord';
+      return;
+    }
+    if (!r.ok) throw new Error(j.error || r.statusText);
+    errEl.classList.remove('visible');
+    applySnapshot(j);
+    setConn(true, 'Live · discord.js v14');
+  } catch (e) {
+    errEl.textContent = 'API: ' + e.message + ' — läuft der Bot?';
+    errEl.classList.add('visible');
+    setConn(false, 'Offline');
+  }
+}
+
+function connectSse() {
+  const es = new EventSource('/api/stream');
+  es.addEventListener('serverLog', ev => {
+    try {
+      const row = JSON.parse(ev.data);
+      logs.unshift(serverRowToLog(row));
+      if (logs.length > 400) logs.pop();
+      renderAllLogs();
+    } catch (_) {}
+  });
+  es.addEventListener('console', ev => {
+    try {
+      pushConsoleLine(JSON.parse(ev.data));
+    } catch (_) {}
+  });
+  es.onerror = () => setConn(false, 'Stream unterbrochen');
+}
+
+loadSnapshot();
+connectSse();
+setInterval(loadSnapshot, 15000);
+</script>
+</body>
+</html>

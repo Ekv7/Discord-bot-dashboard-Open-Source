@@ -1,0 +1,25 @@
+node_modules/
+.env
+.env.local
+*.log
+logs/*.log
+data/
+data/server-logs.json
+data/console-logs.json
+data/member-stats/
+data/server-logs/
+data/warns/
+data/warns.json
+dashboard-ui/dist
+config/cloudflared.yml
+
+# Versehentliche npm/CMD-Artefakte im Root (nie committen)
+$null
+/dashboard-ui@*
+/mynex@*
+/node
+/npm
+/tsc
+
+# Cloudflare-Binary lokal nach scripts/bin legen (zu groß für GitHub ohne LFS)
+scripts/bin/cloudflared.exe
